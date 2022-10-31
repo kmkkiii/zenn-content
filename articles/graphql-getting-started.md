@@ -104,9 +104,32 @@ yarn codegen (GraphQL Code Generator)で型と Hooks 生成
 ログイン中のユーザーに紐づいたデータのみを取り扱いたい場合に、devise のヘルパーメソッドである current_user を使用したいケースがあるかと思います。
 そんな時には GraphqlController に少し手を加えるだけで、Query や Mutation のリソルバでも current_user が使用できるようになります。
 
-```ruby:graphql_controller.rb
+```diff ruby:graphql_controller.rb
+class GraphqlController < ApplicationController
+
+  def execute
+    variables = prepare_variables(params[:variables])
+    query = params[:query]
+    operation_name = params[:operationName]
+    context = {
+      # Query context goes here, for example:
++     current_user: current_user,　# コメントアウトを外す
+-     #current_user: current_user,
+    }
+    result = MyappSchema.execute(query, variables:, context:, operation_name:)
+    render json: result
+  rescue StandardError => e
+    raise e unless Rails.env.development?
+
+    handle_error_in_development(e)
+  end
+
+  # 中略
+end
 
 ```
+
+`context[:current_user]`で current_user を参照できるようになります。
 
 # 参考
 
