@@ -8,17 +8,16 @@ published: false # 公開設定（falseにすると下書き）
 
 # はじめに
 
-研修としてRuby on Rails × GraphQL × React × TypeScriptを使ったタスク管理アプリを作っており、その過程で調べて実装した内容となります。少しでも参考になれば幸いです。
-GraphQLに入門したてなので、間違っている点やこうした方がいいよという点がありましたらコメントでご指摘頂けると大変ありがたいです。
+研修として Ruby on Rails × GraphQL × React × TypeScript を使ったタスク管理アプリを作っており、その過程で調べて実装した内容となります。少しでも参考になれば幸いです。
+GraphQL に入門したてなので、間違っている点やこうした方がいいよという点がありましたらコメントでご指摘頂けると大変ありがたいです。
 
 # 導入
 
 ## バックエンド(Rails)
 
-graphqlを使うためのgemをインストールします。
+graphql を使うための gem をインストールします。
 
-```
-# Gemfile
+```ruby:Gemfile
 gem 'graphql'
 ```
 
@@ -26,52 +25,75 @@ gem 'graphql'
 $ bundle install
 ```
 
+以下のコマンドで必要なファイルを自動生成します。
+ブラウザで GraphQL の実行確認ができる graphiql-rails も併せて追加されるので、もう一度`bundle install`が必要になるかもしれません。
+
 ```
-$ rails g graphql:install 
+$ rails g graphql:install
 ```
 
-ブラウザでGraphQLの実行確認ができるgraphiql-railsも自動で追加されるのでもう一度`bundle install`が必要になるかもしれません。
+生成されたファイルはデフォルトでは`app/graphql/types`以下に配置されますが、
+ファイルを追加していくと対象ファイルを探すのが辛くなってきます。
+そのため、自前でフォルダを作成して整理すると良い感じです。
+フォルダ構成はいろいろな記事で紹介されていますのでお好みでどうぞ。
 
-生成されたファイルはデフォルトではapp/graphql/types以下に配置されるので、ファイルを追加していくと対象ファイルを探すのが辛くなってきます。
-そのため、フォルダを作成して整理すると良いです。
+```
+ここに作成したフォルダ構成をtreeで書く
+```
 
+GraphiQL にアクセスするためのルーティングも追加されているはずのなので、
+サーバー起動後、ブラウザで`http://localhost:3000/graphiql`にアクセスすると IDE が開き、GraphQL のクエリを実行して確認することができます。
 
+```ruby:config/routes.rb
+Rails.application.routes.draw do
+
+  if Rails.env.development?
+    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
+  end
+  post "/graphql", to: "graphql#execute"
+
+end
+```
 
 ## フロントエンド(React、TypeScript)
+
+```
+$ yarn add
+```
 
 ApolloClient
 GraphQL Code Generator
 
 TODO：スキーマ指定からエンドポイント指定に変えて試してみる。
 
-
-# Query実装編
+# Query 実装編
 
 ## 全件取得
 
-
-
-
-## idを使って1件取得
-
+## id を使って 1 件取得
 
 ## 複数テーブルから取得
 
-
 ## ページネーション
 
-
-# Mutation実装編
+# Mutation 実装編
 
 ## 登録(Create)
 
-
 ## 更新(Update)
-
 
 ## 削除(Delete)
 
+## 番外編 認証情報を扱いたいときには
+
+研修では認証機能を `devise` と `devise_token_auth` の gem を用いて実装しました。
+ログイン中のユーザーに紐づいたデータのみを取り扱いたい場合に、devise のヘルパーメソッドである current_user を使用したいケースがあるかと思います。
+そんな時には GraphqlController に少し手を加えるだけで、Query や Mutation のリソルバでも current_user が使用できるようになります。
+
+```ruby:graphql_controller.rb
+
+```
 
 # 参考
 
-- 
+-
