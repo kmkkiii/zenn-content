@@ -68,6 +68,20 @@ TODO：スキーマ指定からエンドポイント指定に変えて試して�
 
 # Query 実装編
 
+Object の Type 生成
+
+Query のリソルバ作成
+
+QueryType に追加
+
+スキーマダンプ
+
+ts でクエリをかく
+
+yarn codegen (GraphQL Code Generator)で型と Hooks 生成
+
+生成された Hooks をコンポーネントに導入
+
 ## 全件取得
 
 ## id を使って 1 件取得
