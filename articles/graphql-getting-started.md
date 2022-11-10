@@ -8,8 +8,9 @@ published: false # 公開設定（falseにすると下書き）
 
 # はじめに
 
-研修として Ruby on Rails × GraphQL × React × TypeScript を使ったタスク管理アプリを作っており、その過程で調べて実装した内容となります。少しでも参考になれば幸いです。
-GraphQL に入門したてなので、間違っている点やこうした方がいいよという点がありましたらコメントでご指摘頂けると大変ありがたいです。
+10 月から株式会社 mofmof に入社し、研修として Ruby on Rails × GraphQL × React × TypeScript を使ったタスク管理アプリを作ったので、その実装内容を抜粋してまとめてみました。
+これから GraphQL を使っていこうとしている方のとっかかりとして、少しでも参考になれば幸いです。
+間違っている点やこうした方がいいよという点がありましたらコメントでご指摘頂けると大変ありがたいです。
 
 # 導入
 
@@ -32,13 +33,18 @@ $ bundle install
 $ rails g graphql:install
 ```
 
-生成されたファイルはデフォルトでは`app/graphql/types`以下に配置されますが、
-ファイルを追加していくと対象ファイルを探すのが辛くなってきます。
-そのため、自前でフォルダを作成して整理すると良い感じです。
+実行後、`app/graphql/types`と`app/graphql/mutations`のフォルダが作成されますが、
+ファイルを追加していくとこれらのフォルダから対象ファイルを探すのが辛くなってきます。
+そのため、自前でフォルダを作成して整理すると良い感じです。今回は以下のような構成にしました。
 フォルダ構成はいろいろな記事で紹介されていますのでお好みでどうぞ。
 
 ```
-ここに作成したフォルダ構成をtreeで書く
+app/graphql
+├── input_types <- 追加
+├── mutations
+├── object_types <- 追加
+├── queries <- 追加
+└── types
 ```
 
 GraphiQL にアクセスするためのルーティングも追加されているはずのなので、
@@ -98,11 +104,11 @@ yarn codegen (GraphQL Code Generator)で型と Hooks 生成
 
 ## 削除(Delete)
 
-## 番外編 認証情報を扱いたいときには
+## 【番外編その１】 認証情報を扱いたい
 
 研修では認証機能を `devise` と `devise_token_auth` の gem を用いて実装しました。
 ログイン中のユーザーに紐づいたデータのみを取り扱いたい場合に、devise のヘルパーメソッドである current_user を使用したいケースがあるかと思います。
-そんな時には GraphqlController に少し手を加えるだけで、Query や Mutation のリソルバでも current_user が使用できるようになります。
+そんな時には下記のように GraphqlController へ少し手を加えることによって、`context[:current_user]`という形で current_user を参照できるようになります。
 
 ```diff ruby:graphql_controller.rb
 class GraphqlController < ApplicationController
@@ -129,7 +135,9 @@ end
 
 ```
 
-`context[:current_user]`で current_user を参照できるようになります。
+## 【番外編その２】 引数が不要な Mutation を定義したい
+
+フロント側で`input: {}`のように引数を書くか、GraphQL::Schema::Mutation を継承して InputObject を自動生成しないようにする方法が考えられます。
 
 # 参考
 
