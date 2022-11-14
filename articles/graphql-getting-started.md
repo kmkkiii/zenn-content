@@ -64,29 +64,42 @@ end
 ## フロントエンド(React、TypeScript)
 
 ```
-$ yarn add
+$ yarn add graphql @apollo/client
+$ yarn add -D typescript @graphql-codegen
 ```
 
 ApolloClient
+
 GraphQL Code Generator
 
 TODO：スキーマ指定からエンドポイント指定に変えて試してみる。
 
 # Query 実装編
 
-Object の Type 生成
-
 Query のリソルバ作成
+
+Object の Type 生成
 
 QueryType に追加
 
 スキーマダンプ
+以下のコマンドを実行すると、ルートに`schema.graphql`と`schema.json`が生成されます。
+
+```
+$ rails graphql:schema:dump
+```
 
 ts でクエリをかく
 
 yarn codegen (GraphQL Code Generator)で型と Hooks 生成
 
+```
+$ yarn codegen
+```
+
 生成された Hooks をコンポーネントに導入
+生成された`graphql.ts`には「use〜Query」or「use〜Mutation」という名前で Hooks が生成されます。
+基本的な使い方はコメントで例が示されています。
 
 ## 全件取得
 
@@ -139,6 +152,6 @@ end
 
 フロント側で`input: {}`のように引数を書くか、GraphQL::Schema::Mutation を継承して InputObject を自動生成しないようにする方法が考えられます。
 
-# 参考
+# 参考 3
 
 -
