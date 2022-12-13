@@ -8,9 +8,9 @@ published: false # 公開設定（falseにすると下書き）
 
 # はじめに
 
+この記事は、[mofmof Advent Calendar 2022](https://qiita.com/advent-calendar/2022/mofmof) **15 日目**の記事です。
 10 月から株式会社 mofmof に入社し、研修として Ruby on Rails × GraphQL × React × TypeScript を使ったタスク管理アプリを作ったので、その実装内容を抜粋してまとめてみました。
 これから GraphQL を使っていこうとしている方のとっかかりとして、少しでも参考になれば幸いです。
-間違っている点やこうした方がいいよという点がありましたらコメントでご指摘頂けると大変ありがたいです。
 
 # 導入
 
@@ -72,8 +72,6 @@ ApolloClient
 
 GraphQL Code Generator
 
-TODO：スキーマ指定からエンドポイント指定に変えて試してみる。
-
 # Query 実装編
 
 Query のリソルバ作成
@@ -117,11 +115,13 @@ $ yarn codegen
 
 ## 削除(Delete)
 
-## 【番外編その１】 認証情報を扱いたい
+# 【番外編その１】 リゾルバで current_user を使いたい
 
 研修では認証機能を `devise` と `devise_token_auth` の gem を用いて実装しました。
 ログイン中のユーザーに紐づいたデータのみを取り扱いたい場合に、devise のヘルパーメソッドである current_user を使用したいケースがあるかと思います。
 そんな時には下記のように GraphqlController へ少し手を加えることによって、`context[:current_user]`という形で current_user を参照できるようになります。
+
+:::details 実装例
 
 ```diff ruby:graphql_controller.rb
 class GraphqlController < ApplicationController
@@ -132,8 +132,8 @@ class GraphqlController < ApplicationController
     operation_name = params[:operationName]
     context = {
       # Query context goes here, for example:
-+     current_user: current_user,　# コメントアウトを外す
 -     #current_user: current_user,
++     current_user: current_user,　# コメントアウトを外す
     }
     result = MyappSchema.execute(query, variables:, context:, operation_name:)
     render json: result
@@ -148,7 +148,7 @@ end
 
 ```
 
-今回はトークン認証を行なっているため、ApolloClient で以下の設定を追加することにより、GraphqlController でもログイン中のユーザー情報が扱えるようにしています。
+今回はトークン認証を行なっているため、ApolloClient で以下の設定を追加することにより、GraphqlController 経由でログイン中のユーザー情報が扱えるようにしています。
 
 ```typescript:application.tsx
 import * as React from "react";
@@ -156,9 +156,7 @@ import { createRoot } from "react-dom/client";
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import App from "../App";
-import "virtual:windi.css";
 import Cookies from "js-cookie";
-import { createUploadLink } from "apollo-upload-client";
 
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);
@@ -179,18 +177,6 @@ const client = new ApolloClient({
       uri: "/graphql",
     })
   ),
-  cache: new InMemoryCache({
-    typePolicies: {
-      Query: {
-        fields: {
-          tasks: {
-            keyArgs: false,
-            merge: true,
-          },
-        },
-      },
-    },
-  }),
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -205,10 +191,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 ```
 
-## 【番外編その２】 引数が不要な Mutation を定義したい
+:::
+
+# 【番外編その２】 引数を取らない Mutation を定義したい
 
 フロント側で`input: {}`のように引数を書くか、GraphQL::Schema::Mutation を継承して InputObject を自動生成しないようにする方法が考えられます。
 
-# 参考 3
+参考
 
--
+# 最後に
+
+研修を通して GraphQL と少し仲良くなれた気がします！
+ここまで読んでくださりありがとうございました。
