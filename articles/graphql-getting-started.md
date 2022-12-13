@@ -9,7 +9,7 @@ published: false # 公開設定（falseにすると下書き）
 # はじめに
 
 この記事は、[mofmof Advent Calendar 2022](https://qiita.com/advent-calendar/2022/mofmof) **15 日目**の記事です。
-10 月から株式会社 mofmof に入社し、研修として Ruby on Rails × GraphQL × React × TypeScript を使ったタスク管理アプリを作ったので、その実装内容を抜粋してまとめてみました。
+10 月から[株式会社 mofmof](https://www.mof-mof.co.jp/) に入社し、研修として Ruby on Rails × GraphQL × React × TypeScript を使ったタスク管理アプリを作りました。その中から GraphQL に関する実装内容を抜粋してまとめてみました。
 これから GraphQL を使っていこうとしている方のとっかかりとして、少しでも参考になれば幸いです。
 
 # 導入
