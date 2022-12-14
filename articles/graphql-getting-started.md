@@ -1,5 +1,5 @@
 ---
-title: "GraphQLに入門しました" # 記事のタイトル
+title: "Rails×ApolloClient×React×TypeScriptでGraphQLに入門しました" # 記事のタイトル
 emoji: "🐢" # アイキャッチとして使われる絵文字（1文字だけ）
 type: "tech" # tech: 技術記事 / idea: アイデア記事
 topics: ["GraphQL", "Rails", "React", "Apollo", "Typescript"] # タグ。["markdown", "rust", "aws"]のように指定する
@@ -14,7 +14,7 @@ published: false # 公開設定（falseにすると下書き）
 
 # 導入
 
-## バックエンド(Rails)
+## サーバーサイド(Rails)
 
 graphql を使うための gem をインストールします。
 
@@ -61,24 +61,27 @@ Rails.application.routes.draw do
 end
 ```
 
-## フロントエンド(React、TypeScript)
+## クライアントサイド(React、TypeScript)
+
+クライアント側で GraphQL を扱いやすくするために以下のライブラリを追加します。
+設定等は割愛しますので、それぞれ Get Started のドキュメントをご覧ください。
 
 ```
 $ yarn add graphql @apollo/client
 $ yarn add -D typescript @graphql-codegen
 ```
 
-ApolloClient
+https://www.apollographql.com/docs/react/get-started
 
-GraphQL Code Generator
+https://the-guild.dev/graphql/codegen/docs/getting-started
 
 # Query 実装編
 
-Query のリソルバ作成
+1. Object の Type 定義
 
-Object の Type 生成
+2. Query のリソルバ作成
 
-QueryType に追加
+3. QueryType に追加
 
 スキーマダンプ
 以下のコマンドを実行すると、ルートに`schema.graphql`と`schema.json`が生成されます。
@@ -101,19 +104,147 @@ $ yarn codegen
 
 ## 全件取得
 
+```ruby:app/graphql/queries/tasks.rb
+module Queries
+  class Tasks < Queries::BaseQuery
+    type [ObjectTypes::TaskType], null: false
+
+    def resolve
+      ::Task.all
+    end
+  end
+end
+```
+
 ## id を使って 1 件取得
+
+```ruby:app/graphql/queries/task.rb
+module Queries
+  class Task < Queries::BaseQuery
+    type ObjectTypes::TaskType, null: false
+    argument :id, ID, required: true
+
+    def resolve(id:)
+      ::Task.find(id)
+    end
+  end
+end
+```
 
 ## 複数テーブルから取得
 
+モデル同士のリレーションを設定して ObjectTypes にフィールドを追加することで取得できます。
+以下の実装では、Task と Status が 1 対多の関係になっています。
+
+```diff ruby:app/graphql/object_types/task_type.rb
+# frozen_string_literal: true
+
+module ObjectTypes
+  class TaskType < Types::BaseObject
+    field :id, ID, null: false
+    field :title, String, null: false
+    field :detail, String
+    field :limit_on, GraphQL::Types::ISO8601Date, null: false
++   field :status_id, ID
++   field :status, ObjectTypes::StatusType
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+  end
+end
+```
+
 ## ページネーション
+
+クエリ定義の Type に対して`connection_type`を付けます。
+
+```ruby:app/graphql/queries/tasks.rb
+module Queries
+  class Tasks < Queries::AuthRequiredQuery
+    type ObjectTypes::TaskType.connection_type, null: false
+
+    def resolve
+      ::Task.all
+    end
+  end
+end
+```
 
 # Mutation 実装編
 
+パラメータを一つ一つリゾルバに定義するのは大変なので、`input_types`にまとめて定義しておきます。
+
+```ruby:app/graphql/input_types/task.rb
+module InputTypes
+  class Task < Types::BaseInputObject
+    graphql_name 'TaskInput'
+
+    argument :title, String, required: true
+    argument :detail, String, required: false
+    argument :limit_on, String, required: true
+    argument :status_id, ID, required: true
+  end
+end
+```
+
 ## 登録(Create)
+
+```ruby:app/graphql/mutations/create_task.rb
+module Mutations
+  class CreateTask < Mutations::BaseMutation
+    field :task, ObjectTypes::TaskType, null: false
+
+    argument :params, InputTypes::Task, required: true
+
+    def resolve(params:)
+      task = ::Task.create!(params.to_h)
+      { task: }
+    rescue StandardError => e
+      GraphQL::ExecutionError.new(e.message)
+    end
+  end
+end
+
+```
 
 ## 更新(Update)
 
+```ruby:app/graphql/mutations/update_task.rb
+module Mutations
+  class UpdateTask < BaseMutation
+    field :task, ObjectTypes::TaskType, null: false
+
+    argument :id, ID, required: true
+    argument :params, InputTypes::Task, required: true
+
+    def resolve(id:, params:)
+      task = ::Task.find(id)
+      task.update!(params.to_h)
+      { task: }
+    rescue StandardError => e
+      GraphQL::ExecutionError.new(e.message)
+    end
+  end
+end
+```
+
 ## 削除(Delete)
+
+```ruby:app/graphql/mutations/delete_task.rb
+module Mutations
+  class DeleteTask < BaseMutation
+    field :id, ID, null: false
+
+    argument :id, ID, required: true
+
+    def resolve(id:)
+      ::Task.find(id).destroy!
+      { id: }
+    rescue StandardError => e
+      GraphQL::ExecutionError.new(e.message)
+    end
+  end
+end
+```
 
 # 【番外編その１】 リゾルバで current_user を使いたい
 
@@ -157,6 +288,7 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import App from "../App";
 import Cookies from "js-cookie";
+import { createUploadLink } from "apollo-upload-client";
 
 const container = document.getElementById("root") as HTMLElement;
 const root = createRoot(container);
@@ -197,9 +329,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 フロント側で`input: {}`のように引数を書くか、GraphQL::Schema::Mutation を継承して InputObject を自動生成しないようにする方法が考えられます。
 
-参考
+https://qiita.com/ham0215/items/c11324bfc98e56778891
 
 # 最後に
 
-研修を通して GraphQL と少し仲良くなれた気がします！
-ここまで読んでくださりありがとうございました。
+研修を通して GraphQL と少し仲良くなれた気がします。
+ここまで読んで下さってありがとうございました！
