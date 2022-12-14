@@ -285,6 +285,30 @@ module Queries
 end
 ```
 
+ApolloClient でキャッシュに関する設定を追加します。
+カーソルベースなら`relayStylePagination()`、オフセットベースなら`offsetLimitPagination()`を使うと良さそうです。
+詳しくはドキュメントをご覧ください。
+https://www.apollographql.com/docs/react/pagination/overview
+
+```typescript:app/javascript/entrypoints/application.tsx
+const client = new ApolloClient({
+  link: authLink.concat(
+    createUploadLink({
+      uri: "/graphql",
+    })
+  ),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          tasks: offsetLimitPagination(),
+        },
+      },
+    },
+  }),
+});
+```
+
 ```typescript:app/javascript/graphql/queries/tasks.ts
 import { gql } from "@apollo/client";
 
