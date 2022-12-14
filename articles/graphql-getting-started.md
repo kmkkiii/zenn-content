@@ -3,7 +3,7 @@ title: "Rails×ApolloClient×React×TypeScriptでGraphQLに入門しました" #
 emoji: "🐢" # アイキャッチとして使われる絵文字（1文字だけ）
 type: "tech" # tech: 技術記事 / idea: アイデア記事
 topics: ["GraphQL", "Rails", "React", "Apollo", "Typescript"] # タグ。["markdown", "rust", "aws"]のように指定する
-published: false # 公開設定（falseにすると下書き）
+published: true # 公開設定（falseにすると下書き）
 ---
 
 # はじめに
@@ -77,32 +77,85 @@ https://the-guild.dev/graphql/codegen/docs/getting-started
 
 # Query 実装編
 
+サーバーサイドからクライアントサイドの順で以下の流れで実装していきました。
+
 1. Object の Type 定義
 
-2. Query のリソルバ作成
+2. Query のリソルバ定義
 
-3. QueryType に追加
+3. QueryType にリゾルバを追加
 
-スキーマダンプ
-以下のコマンドを実行すると、ルートに`schema.graphql`と`schema.json`が生成されます。
+4. スキーマダンプ
+   以下のコマンドを実行すると、プロジェクトルートに`schema.graphql`と`schema.json`が生成されます。
 
 ```
 $ rails graphql:schema:dump
 ```
 
-ts でクエリをかく
+生成されたスキーマは GraphQL Code Generator から参照するために`codegen.yml`の `schema`プロパティにパスを指定します。
 
-yarn codegen (GraphQL Code Generator)で型と Hooks 生成
+```yaml:codegen.yml
+overwrite: true
+schema: "./schema.graphql"
+documents: "./app/javascript/graphql/**/*.ts"
+generates:
+  ./app/javascript/generated/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      - withHOC: false
+      - withComponent: false
+      - withHooks: true
+hooks:
+  afterOneFileWrite:
+    - prettier --write
+```
+
+5. ts でクエリをかく
+
+6. GraphQL Code Generator で型と Hooks 生成
 
 ```
 $ yarn codegen
 ```
 
-生成された Hooks をコンポーネントに導入
-生成された`graphql.ts`には「use〜Query」or「use〜Mutation」という名前で Hooks が生成されます。
-基本的な使い方はコメントで例が示されています。
+7. 生成された Hooks をコンポーネントに導入
+   生成された`graphql.ts`には「use〜Query」or「use〜Mutation」という名前で Hooks が生成されます。基本的な使い方はコメントで例が示されています。
+
+```typescript
+/**
+ * __useFetchTaskByIdQuery__
+ *
+ * To run a query within a React component, call `useFetchTaskByIdQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFetchTaskByIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFetchTaskByIdQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useFetchTaskByIdQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    FetchTaskByIdQuery,
+    FetchTaskByIdQueryVariables
+  >
+) {
+  // 中略
+}
+```
+
+ここからは実装したリゾルバと TypeScript で定義したクエリを列挙していきます。
 
 ## 全件取得
+
+:::details 実装例
 
 ```ruby:app/graphql/queries/tasks.rb
 module Queries
@@ -116,7 +169,26 @@ module Queries
 end
 ```
 
+```typescript:app/javascript/graphql/queries/tasks.ts
+import { gql } from "@apollo/client";
+
+export const FETCH_TASKS = gql`
+  query FetchTasks {
+    tasks {
+      id
+      title
+      detail
+      limitOn
+    }
+  }
+`;
+```
+
+:::
+
 ## id を使って 1 件取得
+
+:::details 実装例
 
 ```ruby:app/graphql/queries/task.rb
 module Queries
@@ -131,10 +203,29 @@ module Queries
 end
 ```
 
+```typescript:app/javascript/graphql/queries/task.ts
+import { gql } from "@apollo/client";
+
+export const FETCH_TASK_BY_ID = gql`
+  query FetchTaskById($id: ID!) {
+    task(id: $id) {
+      id
+      title
+      detail
+      limitOn
+    }
+  }
+`;
+```
+
+:::
+
 ## 複数テーブルから取得
 
 モデル同士のリレーションを設定して ObjectTypes にフィールドを追加することで取得できます。
 以下の実装では、Task と Status が 1 対多の関係になっています。
+
+:::details 実装例
 
 ```diff ruby:app/graphql/object_types/task_type.rb
 # frozen_string_literal: true
@@ -153,9 +244,34 @@ module ObjectTypes
 end
 ```
 
+```typescript:app/javascript/graphql/queries/tasks.ts
+import { gql } from "@apollo/client";
+
+export const FETCH_TASKS = gql`
+  query FetchTasks {
+    tasks {
+      id
+      title
+      detail
+      limitOn
+      statusId
+      status {
+        id
+        name
+      }
+    }
+  }
+`;
+```
+
+:::
+
 ## ページネーション
 
-クエリ定義の Type に対して`connection_type`を付けます。
+クエリ定義の Type に対して`connection_type`を付けることで、
+クエリの引数で件数を指定したり、pageInfo で次ページの有無やカーソル文字列等のメタデータを取得したりできるようになります。
+
+:::details 実装例
 
 ```ruby:app/graphql/queries/tasks.rb
 module Queries
@@ -168,6 +284,47 @@ module Queries
   end
 end
 ```
+
+```typescript:app/javascript/graphql/queries/tasks.ts
+import { gql } from "@apollo/client";
+
+export const FETCH_TASKS = gql`
+  query FetchTasks(
+    $first: Int
+    $last: Int
+    $before: String
+    $after: String
+  ) {
+    tasks(
+      first: $first
+      last: $last
+      before: $before
+      after: $after
+    ) {
+      edges {
+        node {
+          id
+          title
+          detail
+          limitOn
+          status {
+            id
+            name
+          }
+        }
+      }
+      pageInfo {
+        hasPreviousPage
+        hasNextPage
+        startCursor
+        endCursor
+      }
+    }
+  }
+`;
+```
+
+:::
 
 # Mutation 実装編
 
@@ -188,6 +345,8 @@ end
 
 ## 登録(Create)
 
+:::details 実装例
+
 ```ruby:app/graphql/mutations/create_task.rb
 module Mutations
   class CreateTask < Mutations::BaseMutation
@@ -206,7 +365,29 @@ end
 
 ```
 
+```typescript:app/javascript/graphql/mutations/createTask.ts
+import { gql } from "@apollo/client";
+
+export const CREATE_TASK = gql`
+  mutation CreateTask($params: TaskInput!) {
+    createTask(input: { params: $params }) {
+      task {
+        id
+        title
+        detail
+        limitOn
+        statusId
+      }
+    }
+  }
+`;
+```
+
+:::
+
 ## 更新(Update)
+
+:::details 実装例
 
 ```ruby:app/graphql/mutations/update_task.rb
 module Mutations
@@ -227,7 +408,29 @@ module Mutations
 end
 ```
 
+```typescript:app/javascript/graphql/mutations/updateTask.ts
+import { gql } from "@apollo/client";
+
+export const UPDATE_TASK = gql`
+  mutation UpdateTask($id: ID!, $params: TaskInput!) {
+    updateTask(input: { id: $id, params: $params }) {
+      task {
+        id
+        title
+        detail
+        limitOn
+        statusId
+      }
+    }
+  }
+`;
+```
+
+:::
+
 ## 削除(Delete)
+
+:::details 実装例
 
 ```ruby:app/graphql/mutations/delete_task.rb
 module Mutations
@@ -245,6 +448,20 @@ module Mutations
   end
 end
 ```
+
+```typescript:app/javascript/graphql/mutations/deleteTask.ts
+import { gql } from "@apollo/client";
+
+export const DELETE_TASK = gql`
+  mutation DeleteTask($id: ID!) {
+    deleteTask(input: { id: $id }) {
+      id
+    }
+  }
+`;
+```
+
+:::
 
 # 【番外編その１】 リゾルバで current_user を使いたい
 
@@ -334,4 +551,5 @@ https://qiita.com/ham0215/items/c11324bfc98e56778891
 # 最後に
 
 研修を通して GraphQL と少し仲良くなれた気がします。
+今後は[Production Ready GraphQL](https://book.productionreadygraphql.com/)を読んでベストプラクティスを学んでいきたいです。
 ここまで読んで下さってありがとうございました！
