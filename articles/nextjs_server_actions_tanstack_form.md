@@ -95,6 +95,8 @@ Success! Created nextjs_tanstack_form_example at /Users/kmkkiii/Development/next
 
 名前とメールアドレスの入力フォームを例として実装してみました。
 
+https://github.com/kmkkiii/nextjs_tanstack_form_example
+
 ![](/images/nextjs_server_actions_tanstack_form/form.png)
 
 ### zod のスキーマを定義
