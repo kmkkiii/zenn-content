@@ -1,5 +1,5 @@
 ---
-title: "Tanstack FormでNext.jsのServer Actionsを使ってみた" # 記事のタイトル
+title: "TanStack FormでNext.jsのServer Actionsを使ってみた" # 記事のタイトル
 emoji: "😜" # アイキャッチとして使われる絵文字（1文字だけ）
 type: "tech" # tech: 技術記事 / idea: アイデア記事
 topics: ["nextjs", "serveractions", "tanstackform"] # タグ。["markdown", "rust", "aws"]のように指定する
@@ -10,9 +10,9 @@ published: true # 公開設定（falseにすると下書き）
 ## はじめに
 
 Next.js v14 から Stable になった Server Actions。
-それに対応した フォームライブラリとして Tanstack Form を試してみます。
+それに対応した フォームライブラリとして TanStack Form を試してみます。
 
-Tanstack Form は現時点で v0 の β 版ですが、以下の特徴を備えた フォームライブラリです。
+TanStack Form は現時点で v0 の β 版ですが、以下の特徴を備えた フォームライブラリです。
 
 - ファーストクラスの TypeScript サポート
 - シンプルで簡潔な API
@@ -286,7 +286,7 @@ export default function Home() {
 
 ![](/images/nextjs_server_actions_tanstack_form/server-side_validation.png)
 
-## Tanstack Form を使ってみた感想
+## TanStack Form を使ってみた感想
 
 確かに RHF の幅広い API と比べると、シンプルで迷わなくて良さそうでした。
 また、依存が 0 で他のフレームワークにも流用できる設計という点も開発規模によっては嬉しい点でしょうか。
