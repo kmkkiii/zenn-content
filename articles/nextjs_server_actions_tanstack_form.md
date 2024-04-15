@@ -12,7 +12,7 @@ published: true # 公開設定（falseにすると下書き）
 Next.js v14 から Stable になった Server Actions。
 それに対応した フォームライブラリとして Tanstack Form を試してみます。
 
-Tanstack Form は現時点で v0 の β 版ですが、以下の特徴を備えた Form ライブラリです。
+Tanstack Form は現時点で v0 の β 版ですが、以下の特徴を備えた フォームライブラリです。
 
 - ファーストクラスの TypeScript サポート
 - シンプルで簡潔な API
