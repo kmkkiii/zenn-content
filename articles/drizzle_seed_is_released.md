@@ -156,8 +156,6 @@ await seed(db, schema).refine((f) => ({
 }));
 ```
 
-#### with
-
 ### ジェネレーター関数
 
 https://orm.drizzle.team/docs/seed-functions
