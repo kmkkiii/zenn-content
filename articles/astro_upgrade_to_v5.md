@@ -61,8 +61,7 @@ Ok to proceed? (y)
 
 ## paginate()で返される URL が変わった
 
-これまで`/til${page.url.next}`のようにベースパス(`/til`)を自前で書かないといけませんでしたが、
-astro.config.mjs で`base`が設定してあればベースパスは不要になりました。
+これまで`/til${page.url.next}`のようにベースパス(`/til`)を自前で書かないといけませんでしたが、astro.config.mjs で`base`が設定してあればベースパスは不要になりました。
 
 https://docs.astro.build/ja/guides/upgrade-to/v5/#changed-urls-returned-by-paginate
 
