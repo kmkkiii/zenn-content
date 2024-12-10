@@ -1,5 +1,5 @@
 ---
-title: 'TILサイトのAstroをv5へアップロードした際の変更点' # 記事のタイトル
+title: 'TILサイトのAstroをv5へアップグレードした際の変更点' # 記事のタイトル
 emoji: '🚀' # アイキャッチとして使われる絵文字（1文字だけ）
 type: 'tech' # tech: 技術記事 / idea: アイデア記事
 topics: ['Astro'] # タグ。["markdown", "rust", "aws"]のように指定する
