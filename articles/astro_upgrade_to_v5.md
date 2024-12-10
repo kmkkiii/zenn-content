@@ -110,7 +110,7 @@ SVG 画像ファイルをインポートするだけでコンポーネントと�
 ![TILサイトのフッター](/images/astro_upgrade_to_v5/til-footer.png)
 これを利用して、フッターのリンクを SVG 画像のアイコンに変更しました。
 
-https://github.com/kmkkiii/til/blob/83a31ebb93332c8471cfe647399a444e73a38ace/src/components/Footer.astro#L1-L42
+https://github.com/kmkkiii/til/blob/85966161a6a4ea9adc3bb6ce4de1094acaa84131/src/components/Footer.astro#L1-L42
 
 ## おわりに
 
