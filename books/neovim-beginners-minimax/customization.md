@@ -108,9 +108,18 @@ MiniMaxは `mini.nvim` 付属のカラースキームを使っとる。変更す
 ### mini.nvim付属のカラースキームを使う
 
 ```vim
-:colorscheme minischeme   " MiniMaxデフォルト
-:colorscheme minicyan
-:colorscheme minidark
+:colorscheme miniwinter   " MiniMaxデフォルト（冬をイメージした青系）
+:colorscheme minispring   " 春をイメージした緑系
+:colorscheme minisummer   " 夏をイメージした暖色系
+:colorscheme miniautumn   " 秋をイメージしたオレンジ系
+:colorscheme randomhue    " 起動ごとにランダムな色相
+```
+
+設定を固定するには `plugin/30_mini.lua` の先頭付近にある行を変更する：
+
+```lua
+-- plugin/30_mini.lua
+now(function() vim.cmd('colorscheme miniwinter') end)   -- ← 変更したいテーマ名に
 ```
 
 ### 外部カラースキームを追加する
