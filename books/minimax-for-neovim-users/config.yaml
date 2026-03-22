@@ -1,0 +1,15 @@
+title: "mini.nvimエコシステムとMiniMaxの魅力"
+summary: "lazy.nvim + telescope + nvim-cmpスタックを使うNeovimユーザーへ。mini.nvimの設計哲学、MiniMaxという設定ジェネレータ、そして「プラグイン沼」から抜け出すための別のアプローチを正直に紹介します。"
+topics: ["Neovim", "Vim", "MiniMax", "mininvim"]
+published: false
+price: 0
+toc_depth: 2
+chapters:
+  - introduction
+  - mini-nvim-philosophy
+  - ecosystem-comparison
+  - minimax-deep-dive
+  - migration-strategy
+  - what-to-keep
+  - vim-pack
+  - conclusion
