@@ -1,0 +1,19 @@
+title: "MiniMaxではじめるNeovim入門"
+summary: "AIコーディング時代に軽量なターミナルエディタを使いたいエンジニア向けに、MiniMax（mini.nvimベースの構成ジェネレータ）を使ってNeovimの基本操作から実践的な開発環境構築までを学ぶ入門書です。"
+topics: ["Neovim", "Vim", "MiniMax", "mininvim"]
+published: false
+price: 0
+toc_depth: 2
+chapters:
+  - introduction
+  - why-neovim-now
+  - prerequisites
+  - minimax-setup
+  - vim-fundamentals
+  - editing-and-text-objects
+  - file-navigation
+  - lsp-and-completion
+  - git-integration
+  - customization
+  - ai-coding-plugins
+  - appendix
